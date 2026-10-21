@@ -40,9 +40,9 @@ function render(d){
   headlines(d);
   $('depts').innerHTML=d.departments.map(x=>`<div class="card"><h4>${esc(x.name)}</h4><p class="hod">HOD · ${esc(x.hod||'—')}</p>
     <div class="stats"><div><b>${x.students}</b><span>students</span></div><div><b>${x.faculty}</b><span>faculty</span></div><div><b>${x.courses}</b><span>courses</span></div></div>
-    ${bar(x.avg_score,'var(--ink)')}<small style="font:12px 'JetBrains Mono';color:var(--mute)">avg score ${x.avg_score??'—'}%</small></div>`).join('');
-  $('courseBars').innerHTML=d.courses.map(c=>`<div class="row"><div class="lbl"><b>${esc(c.name)}</b><small>${esc(c.faculty||'Unassigned')} · ${c.enrolled} enrolled</small></div>
-    <div class="track" style="height:14px"><div class="fill" style="background:var(--ink)" data-w="${c.avg_score||0}"></div>${c.pass_rate!=null?`<span class="mk" style="left:${c.pass_rate}%" title="Pass rate ${c.pass_rate}%"></span>`:''}</div><div class="val">${c.avg_score??'—'}%</div></div>`).join('')
+    ${bar(x.avg_score,'var(--ink)')}<small style="font:12px 'JetBrains Mono';color:var(--mute)">${x.avg_score!=null?'avg score '+x.avg_score+'%':'no exam results yet'}</small></div>`).join('');
+  $('courseBars').innerHTML=d.courses.map(c=>`<div class="row"><div class="lbl"><b>${esc(c.name)}</b><small>${esc(c.faculty||'Unassigned')} · ${c.enrolled} enrolled${c.avg_score==null?' · awaiting exams':''}</small></div>
+    <div class="track" style="height:14px"><div class="fill" style="background:var(--ink)" data-w="${c.avg_score||0}"></div>${c.pass_rate!=null?`<span class="mk" style="left:${c.pass_rate}%" title="Pass rate ${c.pass_rate}%"></span>`:''}</div><div class="val">${c.avg_score!=null?c.avg_score+'%':'<small style="color:var(--mute)">no results</small>'}</div></div>`).join('')
     +`<p style="margin-top:8px;font:12px 'JetBrains Mono';color:var(--mute)"><span style="color:var(--red)">▍</span> red marker = pass rate of that course</p>`;
   const mx=Math.max(...d.grade_bands.map(b=>b.n),1);
   $('bands').innerHTML=d.grade_bands.map(b=>`<div class="col"><div data-h="${b.n/mx*80}"><b>${b.n}</b></div><span>${esc(b.band.replace('  ','\n'))}</span></div>`).join('');
@@ -52,7 +52,7 @@ function render(d){
   $('top').innerHTML=d.leaderboard.slice(0,5).map(s=>`<li data-id="${s.id}"><span><b>${esc(s.name)}</b><small>${esc(s.dept)} · year ${s.year}</small></span><b class="s">${s.score}</b></li>`).join('');
   $('wl').textContent=d.at_risk.length+' flagged';
   $('risk').innerHTML=d.at_risk.map(s=>`<div class="risk" data-id="${s.id}"><div><b class="n">${esc(s.name)}</b><div class="chips">${s.score<50?'<span class="chip">low score</span>':''}${s.attendance<75?'<span class="chip">attendance '+s.attendance+'%</span>':''}${s.fails>0?`<span class="chip">${s.fails} fail${s.fails>1?'s':''}</span>`:''}</div></div><b style="font:700 20px Fraunces">${s.score??'—'}</b></div>`).join('')||'<p>No students flagged.</p>';
-  $('schol').innerHTML=`<div class="big">${inr(d.scholarships.reduce((a,s)=>a+s.amount,0))}</div>`+d.scholarships.map(s=>`<div class="item"><span class="chip ${s.status==='Active'?'ok':s.status==='Pending'?'gold':''}">${esc(s.status)}</span> ${s.n} awards · ${inr(s.amount)}</div>`).join('');
+  $('schol').innerHTML=`<div class="big">${inr(d.scholarships.reduce((a,s)=>a+s.amount,0))}</div>`+d.scholarships.map(s=>`<div class="item"><span class="chip ${s.status==='Active'?'ok':s.status==='Pending'?'gold':''}">${esc(s.status)}</span> ${s.n} award${s.n>1?"s":""} · ${inr(s.amount)}</div>`).join('');
   $('intern').innerHTML=d.internships.map(i=>`<div class="item"><b>${esc(i.company)}</b><small>${esc(i.name)} · ${i.weeks} weeks</small></div>`).join('');
   $('res').innerHTML=d.research.map(r=>`<div class="item"><b>${esc(r.title)}</b><small>${esc(r.student)} guided by ${esc(r.guide)} · <span class="chip ${r.status==='Completed'?'ok':'gold'}">${esc(r.status)}</span></small></div>`).join('');
   const mc=Math.max(...d.workload.map(w=>w.credits),1);

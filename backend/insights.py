@@ -41,7 +41,7 @@ def get_insights():
                 SELECT c.course_name AS name, f.faculty_name AS faculty,
                   count(DISTINCT e.student_id) AS enrolled,
                   round(avg({PCT}),1) AS avg_score,
-                  round(100.0*avg(CASE WHEN er.result_status='Pass' THEN 1 ELSE 0 END),0) AS pass_rate
+                  round(100.0*avg(CASE WHEN er.result_status='Pass' THEN 1 WHEN er.result_status='Fail' THEN 0 END),0) AS pass_rate
                 FROM COURSE c LEFT JOIN FACULTY f USING(faculty_id)
                 LEFT JOIN ENROLLMENT e ON e.course_id=c.course_id
                 LEFT JOIN EXAMINATION_RESULT er ON er.course_id=c.course_id

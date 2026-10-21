@@ -1,0 +1,54 @@
+/* Manage-records screen: aligned with the Insights dashboard (paper / ink / vermilion) */
+html[data-theme],:root{
+ --font-sans:'Inter Tight','Inter',system-ui,sans-serif;--font-heading:'Fraunces',Georgia,serif;
+ --bg-primary:#f3eee4;--bg-secondary:#f3eee4;--bg-card:#fbf8f2;--bg-card-hover:#f4efe3;--bg-surface:#e6dfd0;--bg-input:#fffdf8;
+ --border-color:#d9d1c0;--border-focus:#14213d;
+ --text-primary:#14213d;--text-secondary:#4b5563;--text-muted:#6b7280;
+ --primary:#14213d;--primary-hover:#c2410c;--primary-glow:transparent;
+ --success:#1f6f5c;--success-bg:#cfe6dc;--danger:#c2410c;--danger-hover:#9a3412;--danger-bg:#f4c7b4;--warning:#b7791f;--warning-bg:#f1d9a8;
+ --radius-sm:2px;--radius-md:3px;--radius-lg:3px;--shadow-card:none;--shadow-modal:0 24px 60px -20px rgba(20,33,61,.45);
+}
+body{background:var(--bg-primary);color:var(--text-primary)}
+.sidebar{background:var(--bg-primary)}
+.brand-section{background:none;border-bottom:1px solid var(--border-color)}
+.brand-icon{background:#14213d;box-shadow:none;border-radius:2px}
+.brand-info h1{font-family:var(--font-heading);text-transform:uppercase;font-size:.95rem;letter-spacing:.04em}
+.nav-group-title{font-family:'JetBrains Mono',monospace;font-weight:500;letter-spacing:.12em;color:#c2410c}
+.nav-item{border-radius:0;border-left:2px solid transparent}
+.nav-item:hover{background:transparent;color:#14213d;border-left-color:#c2410c}
+.nav-item.active{background:#14213d;color:#f3eee4;border-left-color:#c2410c}
+.nav-item.active svg{color:#f3eee4}
+.nav-badge{font-family:'JetBrains Mono',monospace;background:#e6dfd0;color:#14213d;border-radius:20px}
+.nav-item.active .nav-badge{background:#c2410c;color:#fff}
+.top-header{background:var(--bg-primary);backdrop-filter:none;border-bottom:1px solid var(--border-color)}
+.current-table-title{font-family:var(--font-heading);font-weight:700;letter-spacing:-.01em;font-size:1.7rem}
+.btn{border-radius:2px;font-weight:600;box-shadow:none}
+.btn-primary{background:#14213d;color:#f3eee4;border:1px solid #14213d}
+.btn-primary:hover{background:#c2410c;border-color:#c2410c}
+.btn-secondary{background:transparent;border:1px solid #14213d;color:#14213d}
+.btn-secondary:hover{background:#14213d;color:#f3eee4}
+.table-card{background:var(--bg-card);border:1px solid var(--border-color);border-radius:3px;box-shadow:none;backdrop-filter:none}
+.table-toolbar{border-bottom:1px solid var(--border-color)}
+.search-input{background:#fffdf8;border:1px solid #14213d;border-radius:2px}
+.search-input:focus{outline:3px solid #f1d9a8;box-shadow:none}
+.data-table th{background:#14213d;color:#f3eee4;font-family:'JetBrains Mono',monospace;font-weight:500;letter-spacing:.08em;border-bottom:0}
+.data-table td{border-bottom:1px solid var(--border-color)}
+.data-table tbody tr:nth-child(even){background:rgba(20,33,61,.025)}
+.data-table tbody tr:hover{background:#f1d9a8}
+.badge{border-radius:20px;font-family:'JetBrains Mono',monospace;font-weight:500}
+.badge-pass,.badge-active,.badge-completed{background:#cfe6dc;color:#14532d}
+.badge-fail,.badge-inactive{background:#f4c7b4;color:#7c2d12}
+.badge-pending,.badge-ongoing{background:#f1d9a8;color:#6b4710}
+.badge-ug,.badge-pg,.badge-phd,.badge-permanent,.badge-adjunct,.badge-visiting{background:#e1e6f0;color:#14213d}
+.btn-action{border-radius:2px;border:1px solid var(--border-color);color:#14213d}
+.table-footer{font-family:'JetBrains Mono',monospace;color:var(--text-muted)}
+.modal-overlay{background:rgba(20,33,61,.55);backdrop-filter:none}
+.modal-card{background:#fbf8f2;border:1px solid #14213d;border-radius:3px}
+.modal-header h2{font-family:var(--font-heading);font-weight:700}
+.form-label{font-family:'JetBrains Mono',monospace;text-transform:uppercase;font-size:.7rem;letter-spacing:.08em}
+.form-input,.form-select,.form-textarea{background:#fffdf8;border:1px solid #bdb4a0;border-radius:2px;color:#14213d}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:#14213d;outline:3px solid #f1d9a8;box-shadow:none}
+.toast{background:#14213d;color:#f3eee4;border-radius:2px;border:0}
+.db-status{font-family:'JetBrains Mono',monospace}
+::-webkit-scrollbar-thumb{background:#c9bfa8}
+#theme-toggle,.theme-toggle,[id*="theme"]{display:none!important}
