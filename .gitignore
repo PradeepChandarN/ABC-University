@@ -1,0 +1,33 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+
+# Database files (generated automatically by init_db.py)
+*.duckdb
+*.duckdb.wal
+
+# Binary & Executable files
+cloudflared.exe
+*.exe
+
+# Word / assignment source documents
+*.docx
+
+# Log files
+*.log
+
+# IDE & Editor files
+.vscode/
+.idea/
+
+# OS files
+Thumbs.db
+Desktop.ini
+.DS_Store
