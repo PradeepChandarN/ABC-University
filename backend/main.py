@@ -22,6 +22,7 @@ from database import (
     get_foreign_key_lookups,
     update_academic_performance
 )
+from insights import get_insights, get_student_profile
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -68,6 +69,17 @@ def recalculate_performance():
         return {"success": True, "message": "Academic performance recalculated successfully."}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/insights")
+def insights():
+    return get_insights()
+
+@app.get("/api/insights/student/{student_id}")
+def student_profile(student_id: int):
+    data = get_student_profile(student_id)
+    if not data:
+        raise HTTPException(status_code=404, detail="Student not found.")
+    return data
 
 @app.get("/api/{table_name}")
 def list_records(table_name: str):
@@ -202,6 +214,10 @@ if os.path.exists(FRONTEND_DIR):
     app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
 
     @app.get("/")
+    def serve_insights():
+        return FileResponse(os.path.join(FRONTEND_DIR, "insights.html"))
+
+    @app.get("/manage")
     def serve_frontend_index():
         index_path = os.path.join(FRONTEND_DIR, "index.html")
         if os.path.exists(index_path):

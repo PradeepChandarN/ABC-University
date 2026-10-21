@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ABC University · Academic Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/insights.css">
+</head>
+<body>
+<aside class="rail">
+  <a class="mark" href="/"><span>A</span><b>ABC<br>University</b></a>
+  <nav>
+    <a href="#overview">Overview</a><a href="#departments">Departments</a><a href="#courses">Courses</a>
+    <a href="#performance">Performance</a><a href="#attendance">Attendance</a><a href="#people">Students</a>
+    <a href="#life">Campus life</a><a href="#student360">Student 360</a>
+  </nav>
+  <a class="manage" href="/manage">Manage records <i>→</i></a>
+</aside>
+<main>
+  <header id="overview">
+    <p class="eyebrow" id="today"></p>
+    <h1>Academic<br><em>Intelligence</em></h1>
+    <p class="lede">A live read of every table in the university database: performance, attendance, funding and risk, computed on request in DuckDB.</p>
+  </header>
+  <section class="kpis" id="kpis"></section>
+  <section class="block"><h2><span>01</span>Headlines</h2><ul class="headlines" id="headlines"></ul></section>
+  <section class="block" id="departments"><h2><span>02</span>Departments</h2><div class="cards" id="depts"></div></section>
+  <section class="block" id="courses"><h2><span>03</span>Course league table<small>average score · pass-rate marker</small></h2><div id="courseBars"></div></section>
+  <section class="block" id="performance"><h2><span>04</span>Performance shape</h2>
+    <div class="grid3">
+      <div class="panel"><h3>Score distribution</h3><div class="cols" id="bands"></div></div>
+      <div class="panel"><h3>Average by assessment</h3><div id="types"></div></div>
+      <div class="panel"><h3>Who studies here</h3><div class="donuts" id="mix"></div></div>
+    </div></section>
+  <section class="block" id="attendance"><h2><span>05</span>Attendance radar<small>below 75% is flagged</small></h2><div class="attgrid" id="att"></div></section>
+  <section class="block" id="people"><h2><span>06</span>Students</h2>
+    <div class="grid2"><div class="panel"><h3>Top performers</h3><ol class="rank" id="top"></ol></div>
+    <div class="panel"><h3>Watchlist<small id="wl"></small></h3><div id="risk"></div></div></div></section>
+  <section class="block" id="life"><h2><span>07</span>Campus life</h2>
+    <div class="grid3"><div class="panel"><h3>Scholarships</h3><div id="schol"></div></div>
+    <div class="panel"><h3>Internships</h3><div id="intern"></div></div>
+    <div class="panel"><h3>Research</h3><div id="res"></div></div></div>
+    <div class="panel wide"><h3>Faculty teaching load<small>credits taught</small></h3><div id="load"></div></div></section>
+  <section class="block" id="student360"><h2><span>08</span>Student 360</h2>
+    <div class="finder"><input id="q" list="names" placeholder="Search a student by name or ID…" autocomplete="off"><datalist id="names"></datalist></div>
+    <div id="profile" class="profile empty">Pick a student to see their full record across all 13 tables.</div></section>
+  <footer>ABC University Academic Management · DuckDB + FastAPI</footer>
+</main>
+<script src="/static/js/insights.js"></script>
+</body>
+</html>
