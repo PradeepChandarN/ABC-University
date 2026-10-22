@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Accounts & Security · ABC University</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/portal.css">
+</head>
+<body>
+
+  <div id="topbarContainer"></div>
+
+  <main class="portal-container">
+    <div class="portal-header" style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:16px;">
+      <div>
+        <div class="eyebrow">ADMINISTRATION & SECURITY</div>
+        <h1>User Account Management</h1>
+        <p class="subtitle">Control role-based logins, active statuses, password resets, and inspect system audit activity.</p>
+      </div>
+      <button class="btn btn-primary" onclick="openCreateUserModal()">+ Create User Account</button>
+    </div>
+
+    <!-- User Accounts Table -->
+    <section style="margin-bottom:36px;">
+      <h2 style="font-family:var(--font-serif);font-size:1.35rem;font-weight:700;margin-bottom:12px;">Active User Directory</h2>
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Login ID</th>
+              <th>Role</th>
+              <th>Linked Name & Email</th>
+              <th>Reference ID</th>
+              <th>Account Status</th>
+              <th>Password State</th>
+              <th>Security Actions</th>
+            </tr>
+          </thead>
+          <tbody id="usersTbody">
+            <tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text-muted);">Loading accounts...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Audit Logs Section -->
+    <section style="margin-bottom:36px;">
+      <h2 style="font-family:var(--font-serif);font-size:1.35rem;font-weight:700;margin-bottom:6px;">System Audit Activity Log</h2>
+      <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;">Recent administrative actions, mark updates, attendance modifications, and security events.</p>
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Timestamp (UTC)</th>
+              <th>Operator ID</th>
+              <th>Role</th>
+              <th>Action</th>
+              <th>Target Entity</th>
+              <th>Details</th>
+            </tr>
+          </thead>
+          <tbody id="auditTbody">
+            <tr><td colspan="6" style="text-align:center;padding:24px;color:var(--text-muted);">Loading audit logs...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- Create User Modal -->
+  <div id="createUserModal" class="modal-backdrop" style="display:none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Create New User Account</h3>
+        <button class="modal-close" onclick="closeCreateUserModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form onsubmit="handleCreateUser(event)">
+          <div class="form-group">
+            <label class="form-label">Role</label>
+            <select id="newRole" class="form-control" onchange="onRoleChange()" required>
+              <option value="student">Student</option>
+              <option value="faculty">Faculty</option>
+              <option value="admin">Administrator</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Login ID (Unique)</label>
+            <input type="text" id="newUserId" class="form-control" required placeholder="e.g. 1011 or prof_smith">
+          </div>
+          <div class="form-group" id="refIdGroup">
+            <label class="form-label" id="refIdLabel">Student ID (Ref ID)</label>
+            <input type="number" id="newRefId" class="form-control" required placeholder="Linked Student ID">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Temporary Password (min. 6 characters)</label>
+            <input type="password" id="newPassword" class="form-control" required minlength="6" placeholder="Initial password">
+          </div>
+          <div id="createError" style="color:var(--vermilion);font-size:0.8rem;margin-bottom:12px;display:none;"></div>
+          <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px;">
+            <button type="button" class="btn btn-secondary" onclick="closeCreateUserModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="createUserBtn">Create Account</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reset Password Modal -->
+  <div id="resetPasswordModal" class="modal-backdrop" style="display:none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Reset User Password</h3>
+        <button class="modal-close" onclick="closeResetModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:14px;">
+          Set a new temporary password for user <b id="resetTargetUser" style="color:var(--ink);"></b>. The user will be required to change it upon next sign in.
+        </p>
+        <form onsubmit="handleResetPassword(event)">
+          <div class="form-group">
+            <label class="form-label">New Password (min. 6 characters)</label>
+            <input type="password" id="resetPassInput" class="form-control" required minlength="6" placeholder="Enter new password">
+          </div>
+          <div id="resetError" style="color:var(--vermilion);font-size:0.8rem;margin-bottom:12px;display:none;"></div>
+          <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px;">
+            <button type="button" class="btn btn-secondary" onclick="closeResetModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="resetBtn">Confirm Reset</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/js/portal.js"></script>
+  <script>
+    let activeResetUserId = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const user = await checkAuth();
+      if (!user) return;
+      if (user.role !== 'admin') {
+        window.location.href = `/${user.role}`;
+        return;
+      }
+      renderTopbar('topbarContainer', 'users');
+      loadUsers();
+      loadAuditLogs();
+    });
+
+    async function loadUsers() {
+      try {
+        const res = await fetch('/api/admin/users');
+        if (!res.ok) throw new Error('Failed to load user accounts.');
+        const users = await res.json();
+        renderUsersTable(users);
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    async function loadAuditLogs() {
+      try {
+        const res = await fetch('/api/admin/audit-logs');
+        if (!res.ok) return;
+        const logs = await res.json();
+        renderAuditTable(logs);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function renderUsersTable(users) {
+      const tbody = document.getElementById('usersTbody');
+      tbody.innerHTML = users.map(u => {
+        const isSelf = u.user_id === currentUser.user_id;
+        const statusBadge = u.is_active 
+          ? `<span class="badge badge-active">Active</span>`
+          : `<span class="badge badge-inactive">Deactivated</span>`;
+
+        const passBadge = u.must_change_password
+          ? `<span class="badge badge-warning" title="Must change password on login">Needs Reset</span>`
+          : `<span class="badge badge-pass">Updated</span>`;
+
+        return `
+          <tr>
+            <td style="font-family:var(--font-mono);font-weight:600;">${escapeHtml(u.user_id)}</td>
+            <td><span class="role-badge badge-${u.role}">${u.role}</span></td>
+            <td>
+              <b>${escapeHtml(u.linked_name || '—')}</b>
+              <div style="font-size:0.75rem;color:var(--text-muted);font-family:var(--font-mono);">${escapeHtml(u.email || '')}</div>
+            </td>
+            <td style="font-family:var(--font-mono);">${u.ref_id != null ? u.ref_id : '—'}</td>
+            <td>${statusBadge}</td>
+            <td>${passBadge}</td>
+            <td>
+              <div style="display:flex;gap:6px;">
+                <button class="btn btn-secondary" style="padding:4px 8px;font-size:0.75rem;" onclick="openResetModal('${escapeHtml(u.user_id)}')">
+                  Reset Password
+                </button>
+                ${!isSelf ? `
+                  <button class="btn ${u.is_active ? 'btn-danger' : 'btn-secondary'}" style="padding:4px 8px;font-size:0.75rem;" onclick="toggleActive('${escapeHtml(u.user_id)}')">
+                    ${u.is_active ? 'Disable' : 'Enable'}
+                  </button>
+                ` : `<span style="font-size:0.75rem;color:var(--text-muted);font-family:var(--font-mono);padding:4px;">(Current Account)</span>`}
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderAuditTable(logs) {
+      const tbody = document.getElementById('auditTbody');
+      if (!logs || logs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:16px;color:var(--text-muted);">No audit events recorded yet.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = logs.map(l => `
+        <tr>
+          <td style="font-family:var(--font-mono);font-size:0.78rem;">${l.timestamp}</td>
+          <td style="font-family:var(--font-mono);font-weight:600;">${escapeHtml(l.user_id)}</td>
+          <td><span class="role-badge badge-${l.role}" style="font-size:0.65rem;">${l.role}</span></td>
+          <td style="font-family:var(--font-mono);font-size:0.8rem;color:var(--vermilion);font-weight:600;">${escapeHtml(l.action)}</td>
+          <td style="font-family:var(--font-mono);font-size:0.8rem;">${escapeHtml(l.target)}</td>
+          <td style="font-size:0.82rem;color:var(--text-secondary);">${escapeHtml(l.details || '')}</td>
+        </tr>
+      `).join('');
+    }
+
+    function openCreateUserModal() {
+      document.getElementById('createUserModal').style.display = 'flex';
+      onRoleChange();
+    }
+    function closeCreateUserModal() {
+      document.getElementById('createUserModal').style.display = 'none';
+      document.getElementById('createError').style.display = 'none';
+    }
+
+    function onRoleChange() {
+      const role = document.getElementById('newRole').value;
+      const refGroup = document.getElementById('refIdGroup');
+      const refLabel = document.getElementById('refIdLabel');
+      const refInput = document.getElementById('newRefId');
+
+      if (role === 'admin') {
+        refGroup.style.display = 'none';
+        refInput.required = false;
+      } else {
+        refGroup.style.display = 'block';
+        refInput.required = true;
+        refLabel.textContent = role === 'student' ? 'Student ID (Ref ID)' : 'Faculty ID (Ref ID)';
+      }
+    }
+
+    async function handleCreateUser(e) {
+      e.preventDefault();
+      const errBox = document.getElementById('createError');
+      errBox.style.display = 'none';
+
+      const role = document.getElementById('newRole').value;
+      const user_id = document.getElementById('newUserId').value.trim();
+      const ref_id = role !== 'admin' ? parseInt(document.getElementById('newRefId').value) : null;
+      const password = document.getElementById('newPassword').value;
+
+      try {
+        const res = await fetch('/api/admin/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id, role, ref_id, password })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Failed to create user account.');
+
+        showToast(data.message, 'success');
+        closeCreateUserModal();
+        loadUsers();
+        loadAuditLogs();
+      } catch (err) {
+        errBox.textContent = err.message;
+        errBox.style.display = 'block';
+      }
+    }
+
+    function openResetModal(userId) {
+      activeResetUserId = userId;
+      document.getElementById('resetTargetUser').textContent = userId;
+      document.getElementById('resetPassInput').value = '';
+      document.getElementById('resetError').style.display = 'none';
+      document.getElementById('resetPasswordModal').style.display = 'flex';
+    }
+
+    function closeResetModal() {
+      document.getElementById('resetPasswordModal').style.display = 'none';
+    }
+
+    async function handleResetPassword(e) {
+      e.preventDefault();
+      const errBox = document.getElementById('resetError');
+      errBox.style.display = 'none';
+      const new_password = document.getElementById('resetPassInput').value;
+
+      try {
+        const res = await fetch(`/api/admin/users/${activeResetUserId}/reset-password`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ new_password })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Password reset failed.');
+
+        showToast(data.message, 'success');
+        closeResetModal();
+        loadUsers();
+        loadAuditLogs();
+      } catch (err) {
+        errBox.textContent = err.message;
+        errBox.style.display = 'block';
+      }
+    }
+
+    async function toggleActive(userId) {
+      if (!confirm(`Are you sure you want to toggle the status of user account '${userId}'?`)) return;
+
+      try {
+        const res = await fetch(`/api/admin/users/${userId}/toggle-active`, { method: 'POST' });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Failed to toggle account.');
+
+        showToast(data.message, 'success');
+        loadUsers();
+        loadAuditLogs();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+  </script>
+</body>
+</html>

@@ -20,12 +20,18 @@ The entire database schema, table structures, constraints, relationships, sample
   - Comprehensive constraint error handling with clean HTTP 400 responses.
   - Dynamic foreign-key lookup endpoint (`/api/lookups`) for dropdown population.
   - Performance recalculation endpoint (`/api/recalculate-performance`).
+- **Security & Portals**:
+  - Role-based Access Control (RBAC): Student, Faculty, and Admin portals.
+  - PBKDF2-HMAC-SHA256 salted password hashing (260,000 iterations).
+  - Signed, HttpOnly, SameSite=Lax session cookies (8-hour lifetime) via `itsdangerous`.
+  - Brute-force protection: Locks accounts for 5 minutes after 5 failed login attempts.
+  - Server-side role enforcement on all API routes and web views.
+  - Audit logging of all administrative actions and faculty mark/attendance updates.
 - **Frontend**: HTML5, Vanilla CSS & Vanilla JavaScript
-  - Sleek, modern academic interface with glassmorphism, responsive sidebar, and curated dark/light themes.
-  - Dedicated views for all 13 tables with live search filtering, row count badges, and action toolbars.
-  - Dynamic Add & Edit form modals with intelligent input widgets, enum selectors, and foreign-key dropdowns.
-  - Safe delete confirmation modals preventing accidental deletions.
-  - Real-time toast notifications for user actions and constraint validation feedback.
+  - Cohesive Academic design system (Paper `#f3eee4`, Ink `#14213d`, Vermilion `#c2410c`).
+  - **Student Portal (`/student`)**: Read-only personal academic 360, attendance radar with 75% target calculator, performance benchmark (You vs Class Average).
+  - **Faculty Portal (`/faculty`)**: Restricted to assigned courses, mark entry with 40% pass rule, attendance log, class analytics & at-risk watchlist.
+  - **Admin Portal (`/admin`)**: Institutional analytics dashboard, record management (`/admin/manage`), user directory & audit logs (`/admin/users`).
 
 ---
 
@@ -205,3 +211,18 @@ or
 npx -y localtunnel --port 8000
 ```
 Send the generated `https://...` link to anyone; they can immediately use the portal in their browser without installing anything.
+
+---
+
+## ☁️ Render Deployment & Environment Variables
+
+When deploying to **Render**, set the following environment variables in your Render Dashboard (`Environment` tab):
+
+| Variable | Required | Description |
+|---|---|---|
+| `SECRET_KEY` | Recommended | Random secret string used to sign session cookies. If omitted, a local dev key is used. |
+| `ADMIN_PASSWORD` | Optional | Custom administrator password. Defaults to `Admin@123` if unset. |
+| `PYTHON_VERSION` | Yes | Set to `3.10.12` (configured in `render.yaml`). |
+
+> **⚠️ Note on Render Free Tier Persistence**:
+> Render's Free Web Service tier has an ephemeral disk that resets upon service restarts or redeployments. On every startup, DuckDB automatically verifies the database and re-seeds all default accounts from `CREDENTIALS.md`. Any passwords changed during a session on Render's free tier will revert back to the default credentials upon a server restart.

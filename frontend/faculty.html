@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Faculty Portal · ABC University</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/portal.css">
+  <style>
+    .courses-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    .course-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 3px;
+      padding: 20px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      position: relative;
+    }
+    .course-card:hover {
+      border-color: var(--ink);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-sm);
+    }
+    .course-card.active {
+      border-color: var(--ink);
+      outline: 2px solid var(--ink);
+      background: var(--bg-card-hover);
+    }
+    .course-card.active::after {
+      content: 'SELECTED';
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      background: var(--ink);
+      color: var(--bg-primary);
+      padding: 2px 6px;
+      border-radius: 2px;
+    }
+    .course-stat-row {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px dashed var(--border-color);
+      font-size: 0.8rem;
+    }
+    .course-stat-item {
+      display: flex;
+      flex-direction: column;
+    }
+    .course-stat-item span {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+    .course-stat-item b {
+      font-size: 1.1rem;
+      font-family: var(--font-serif);
+      color: var(--ink);
+    }
+    .workspace-section {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 3px;
+      padding: 24px;
+      margin-bottom: 32px;
+    }
+    .tab-bar {
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 12px;
+      margin-bottom: 20px;
+    }
+    .tab-btn {
+      padding: 8px 16px;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 3px;
+      font-family: var(--font-sans);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--text-secondary);
+      transition: all 0.15s ease;
+    }
+    .tab-btn:hover {
+      color: var(--ink);
+      background: var(--bg-surface);
+    }
+    .tab-btn.active {
+      background: var(--ink);
+      color: var(--bg-primary);
+    }
+    .input-mark, .input-att {
+      width: 70px;
+      padding: 6px 8px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-color);
+      border-radius: 2px;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      text-align: center;
+    }
+    .input-mark:focus, .input-att:focus {
+      outline: 2px solid var(--ink);
+      border-color: var(--ink);
+    }
+    .analytics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="topbarContainer"></div>
+
+  <main class="portal-container">
+    <div id="loading" style="text-align:center;padding:60px 0;font-family:var(--font-mono);color:var(--text-muted);">
+      Loading your faculty courses and academic records...
+    </div>
+
+    <div id="content" style="display:none;">
+      <!-- Header -->
+      <section class="portal-header">
+        <div class="eyebrow" id="facDept">Academic Department</div>
+        <h1 id="facName">Faculty Course Management</h1>
+        <p class="subtitle" id="facMeta">Manage examination marks, attendance logs, and student performance for your assigned courses.</p>
+      </section>
+
+      <!-- Course Cards -->
+      <section style="margin-bottom:32px;">
+        <h2 style="font-family:var(--font-serif);font-size:1.35rem;font-weight:700;margin-bottom:14px;">My Assigned Courses</h2>
+        <div class="courses-grid" id="coursesGrid"></div>
+      </section>
+
+      <!-- Selected Course Workspace -->
+      <section id="courseWorkspace" class="workspace-section" style="display:none;">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+          <div>
+            <span class="eyebrow" style="margin-bottom:2px;">COURSE WORKSPACE</span>
+            <h3 id="selectedCourseTitle" style="font-family:var(--font-serif);font-size:1.5rem;font-weight:700;">Database Management Systems</h3>
+          </div>
+          <div class="tab-bar" style="margin-bottom:0;padding-bottom:0;border:none;">
+            <button class="tab-btn active" onclick="switchTab('marks')">📝 Marks Entry</button>
+            <button class="tab-btn" onclick="switchTab('attendance')">📋 Attendance Log</button>
+            <button class="tab-btn" onclick="switchTab('analytics')">📊 Analytics & Risk</button>
+          </div>
+        </div>
+
+        <!-- TAB 1: Marks Entry -->
+        <div id="tabMarks">
+          <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:16px;">
+            Enter student marks per assessment. Passing threshold is automatically evaluated at <b>40% of maximum marks</b>.
+          </p>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr id="marksThead">
+                  <th>Student ID</th>
+                  <th>Student Name</th>
+                  <th>Assessment</th>
+                  <th>Marks Obtained</th>
+                  <th>Max Marks</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="marksTbody"></tbody>
+            </table>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span id="marksStatusText" style="font-family:var(--font-mono);font-size:0.8rem;color:var(--text-muted);"></span>
+            <button class="btn btn-primary" id="saveMarksBtn" onclick="saveCourseMarks()">
+              Save Examination Marks
+            </button>
+          </div>
+        </div>
+
+        <!-- TAB 2: Attendance -->
+        <div id="tabAttendance" style="display:none;">
+          <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:16px;">
+            Update attendance records. Attended classes cannot exceed classes held. Attendance below 75% will be flagged automatically.
+          </p>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Student ID</th>
+                  <th>Student Name</th>
+                  <th>Classes Held</th>
+                  <th>Classes Attended</th>
+                  <th>Live Percentage</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="attendanceTbody"></tbody>
+            </table>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span id="attStatusText" style="font-family:var(--font-mono);font-size:0.8rem;color:var(--text-muted);"></span>
+            <button class="btn btn-primary" id="saveAttBtn" onclick="saveCourseAttendance()">
+              Save Attendance Records
+            </button>
+          </div>
+        </div>
+
+        <!-- TAB 3: Analytics & Risk Watchlist -->
+        <div id="tabAnalytics" style="display:none;">
+          <div class="analytics-grid" id="analyticsKpis"></div>
+
+          <h4 style="font-family:var(--font-serif);font-size:1.15rem;font-weight:700;margin-bottom:12px;margin-top:24px;">Course Risk Watchlist</h4>
+          <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;">Students with score &lt; 40%, attendance &lt; 75%, or at least one failing assessment grade.</p>
+          
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Student ID</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Avg Score</th>
+                  <th>Attendance %</th>
+                  <th>Fails</th>
+                  <th>Risk Flags</th>
+                </tr>
+              </thead>
+              <tbody id="riskTbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Supervised Research Projects -->
+      <section style="margin-bottom:32px;">
+        <h2 style="font-family:var(--font-serif);font-size:1.35rem;font-weight:700;margin-bottom:14px;">Supervised Research Projects</h2>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Project ID</th>
+                <th>Project Title</th>
+                <th>Student</th>
+                <th>Duration</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="researchTbody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script src="/static/js/portal.js"></script>
+  <script>
+    let myCourses = [];
+    let selectedCourseId = null;
+    let currentAssessments = [];
+    let currentMarks = [];
+    let currentAttendance = [];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const user = await checkAuth();
+      if (!user) return;
+      if (user.role !== 'faculty') {
+        window.location.href = `/${user.role}`;
+        return;
+      }
+      renderTopbar('topbarContainer');
+      loadFacultyOverview();
+    });
+
+    async function loadFacultyOverview() {
+      try {
+        const [cRes, rRes] = await Promise.all([
+          fetch('/api/faculty/me/courses'),
+          fetch('/api/faculty/me/research')
+        ]);
+        if (!cRes.ok || !rRes.ok) throw new Error('Failed to load faculty information.');
+
+        myCourses = await cRes.json();
+        const research = await rRes.json();
+
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('content').style.display = 'block';
+
+        renderCoursesGrid();
+        renderResearchTable(research);
+
+        if (myCourses.length > 0) {
+          selectCourse(myCourses[0].course_id);
+        } else {
+          document.getElementById('coursesGrid').innerHTML = `<p style="color:var(--text-muted);">No courses currently assigned.</p>`;
+        }
+      } catch (err) {
+        document.getElementById('loading').innerHTML = `<span style="color:var(--vermilion);">${err.message}</span>`;
+      }
+    }
+
+    function renderCoursesGrid() {
+      const grid = document.getElementById('coursesGrid');
+      grid.innerHTML = myCourses.map(c => `
+        <div class="course-card ${c.course_id === selectedCourseId ? 'active' : ''}" onclick="selectCourse(${c.course_id})">
+          <span class="eyebrow">${escapeHtml(c.dept_name)} · Sem ${c.semester}</span>
+          <h3 style="font-family:var(--font-serif);font-size:1.15rem;font-weight:700;color:var(--ink);">${escapeHtml(c.course_name)}</h3>
+          <p style="font-size:0.8rem;color:var(--text-muted);font-family:var(--font-mono);margin-top:2px;">Course ID: ${c.course_id} · ${c.credits} Credits</p>
+          <div class="course-stat-row">
+            <div class="course-stat-item">
+              <span>Enrolled</span>
+              <b>${c.enrolled_count || 0}</b>
+            </div>
+            <div class="course-stat-item">
+              <span>Avg Score</span>
+              <b>${c.avg_score != null ? c.avg_score + '%' : '—'}</b>
+            </div>
+            <div class="course-stat-item">
+              <span>Pass Rate</span>
+              <b>${c.pass_rate != null ? c.pass_rate + '%' : '—'}</b>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function selectCourse(courseId) {
+      selectedCourseId = courseId;
+      renderCoursesGrid();
+
+      const course = myCourses.find(c => c.course_id === courseId);
+      if (!course) return;
+
+      document.getElementById('selectedCourseTitle').textContent = `${course.course_name} (ID: ${course.course_id})`;
+      document.getElementById('courseWorkspace').style.display = 'block';
+
+      await loadCourseMarks(courseId);
+      await loadCourseAttendance(courseId);
+      await loadCourseAnalytics(courseId);
+    }
+
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.getElementById('tabMarks').style.display = 'none';
+      document.getElementById('tabAttendance').style.display = 'none';
+      document.getElementById('tabAnalytics').style.display = 'none';
+
+      if (tabName === 'marks') {
+        document.getElementById('tabMarks').style.display = 'block';
+        event.target.classList.add('active');
+      } else if (tabName === 'attendance') {
+        document.getElementById('tabAttendance').style.display = 'block';
+        event.target.classList.add('active');
+      } else if (tabName === 'analytics') {
+        document.getElementById('tabAnalytics').style.display = 'block';
+        event.target.classList.add('active');
+      }
+    }
+
+    // 1. Marks Tab Logic
+    async function loadCourseMarks(courseId) {
+      const [aRes, mRes, sRes] = await Promise.all([
+        fetch(`/api/faculty/me/courses/${courseId}/assessments`),
+        fetch(`/api/faculty/me/courses/${courseId}/marks`),
+        fetch(`/api/faculty/me/courses/${courseId}/students`)
+      ]);
+      currentAssessments = await aRes.json();
+      currentMarks = await mRes.json();
+      const students = await sRes.json();
+
+      const tbody = document.getElementById('marksTbody');
+      if (students.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text-muted);">No enrolled students for this course.</td></tr>`;
+        return;
+      }
+      if (currentAssessments.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text-muted);">No assessments defined for this course.</td></tr>`;
+        return;
+      }
+
+      let rowsHtml = '';
+      students.forEach(s => {
+        currentAssessments.forEach(a => {
+          const markRecord = currentMarks.find(m => m.student_id === s.student_id && m.assessment_id === a.assessment_id);
+          const val = markRecord ? markRecord.marks_obtained : '';
+          const status = markRecord ? markRecord.result_status : 'Pending';
+
+          rowsHtml += `
+            <tr data-student-id="${s.student_id}" data-assessment-id="${a.assessment_id}">
+              <td style="font-family:var(--font-mono);">${s.student_id}</td>
+              <td><b>${escapeHtml(s.student_name)}</b></td>
+              <td>${escapeHtml(a.assessment_type)}</td>
+              <td>
+                <input type="number" step="0.5" min="0" max="${a.max_marks}" class="input-mark mark-field" 
+                       value="${val}" 
+                       oninput="onMarkChange(this, ${a.max_marks})" 
+                       placeholder="0-${a.max_marks}">
+              </td>
+              <td style="font-family:var(--font-mono);">${a.max_marks}</td>
+              <td class="status-cell">
+                <span class="badge ${status === 'Pass' ? 'badge-pass' : status === 'Fail' ? 'badge-fail' : 'badge-warning'}">${status}</span>
+              </td>
+            </tr>
+          `;
+        });
+      });
+      tbody.innerHTML = rowsHtml;
+    }
+
+    function onMarkChange(input, maxMarks) {
+      const val = parseFloat(input.value);
+      const row = input.closest('tr');
+      const statusCell = row.querySelector('.status-cell');
+
+      if (isNaN(val)) {
+        statusCell.innerHTML = `<span class="badge badge-warning">Pending</span>`;
+        return;
+      }
+
+      if (val < 0 || val > maxMarks) {
+        statusCell.innerHTML = `<span class="badge badge-fail">Invalid</span>`;
+        input.style.borderColor = 'var(--vermilion)';
+      } else {
+        input.style.borderColor = 'var(--border-color)';
+        const isPass = val >= 0.40 * maxMarks;
+        statusCell.innerHTML = `<span class="badge ${isPass ? 'badge-pass' : 'badge-fail'}">${isPass ? 'Pass' : 'Fail'}</span>`;
+      }
+    }
+
+    async function saveCourseMarks() {
+      const btn = document.getElementById('saveMarksBtn');
+      const rows = document.querySelectorAll('#marksTbody tr');
+      const marksToSave = [];
+
+      for (const row of rows) {
+        const student_id = parseInt(row.getAttribute('data-student-id'));
+        const assessment_id = parseInt(row.getAttribute('data-assessment-id'));
+        const input = row.querySelector('.mark-field');
+        const val = input.value.trim();
+
+        if (val !== '') {
+          const num = parseFloat(val);
+          marksToSave.push({ student_id, assessment_id, marks_obtained: num });
+        }
+      }
+
+      if (marksToSave.length === 0) {
+        showToast('No marks entered to save.', 'info');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      try {
+        const res = await fetch(`/api/faculty/me/courses/${selectedCourseId}/marks`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ marks: marksToSave })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Failed to save marks.');
+
+        showToast(data.message, 'success');
+        await loadFacultyOverview();
+        await loadCourseAnalytics(selectedCourseId);
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Save Examination Marks';
+      }
+    }
+
+    // 2. Attendance Tab Logic
+    async function loadCourseAttendance(courseId) {
+      const [sRes, aRes] = await Promise.all([
+        fetch(`/api/faculty/me/courses/${courseId}/students`),
+        fetch(`/api/faculty/me/courses/${courseId}/attendance`)
+      ]);
+      const students = await sRes.json();
+      currentAttendance = await aRes.json();
+
+      const tbody = document.getElementById('attendanceTbody');
+      if (students.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text-muted);">No enrolled students.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = students.map(s => {
+        const attRecord = currentAttendance.find(a => a.student_id === s.student_id);
+        const held = attRecord ? attRecord.classes_held : 30;
+        const attended = attRecord ? attRecord.classes_attended : 24;
+        const pct = attRecord ? attRecord.attendance_percentage : (held > 0 ? (100 * attended / held) : 0);
+        const isOk = pct >= 75;
+
+        return `
+          <tr data-student-id="${s.student_id}">
+            <td style="font-family:var(--font-mono);">${s.student_id}</td>
+            <td><b>${escapeHtml(s.student_name)}</b></td>
+            <td><input type="number" min="0" class="input-att input-held" value="${held}" oninput="recalcAttRow(this)"></td>
+            <td><input type="number" min="0" class="input-att input-attended" value="${attended}" oninput="recalcAttRow(this)"></td>
+            <td class="cell-pct" style="font-family:var(--font-mono);font-weight:600;">${pct.toFixed(1)}%</td>
+            <td class="cell-status">
+              <span class="badge ${isOk ? 'badge-pass' : 'badge-fail'}">${isOk ? 'Satisfactory' : 'Below 75%'}</span>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function recalcAttRow(input) {
+      const row = input.closest('tr');
+      const held = parseInt(row.querySelector('.input-held').value) || 0;
+      const attended = parseInt(row.querySelector('.input-attended').value) || 0;
+      const pctCell = row.querySelector('.cell-pct');
+      const statusCell = row.querySelector('.cell-status');
+
+      if (attended > held) {
+        pctCell.textContent = 'Invalid';
+        statusCell.innerHTML = `<span class="badge badge-fail">Attended > Held</span>`;
+        return;
+      }
+
+      const pct = held > 0 ? (100.0 * attended / held) : 0;
+      pctCell.textContent = `${pct.toFixed(1)}%`;
+      const isOk = pct >= 75;
+      statusCell.innerHTML = `<span class="badge ${isOk ? 'badge-pass' : 'badge-fail'}">${isOk ? 'Satisfactory' : 'Below 75%'}</span>`;
+    }
+
+    async function saveCourseAttendance() {
+      const btn = document.getElementById('saveAttBtn');
+      const rows = document.querySelectorAll('#attendanceTbody tr');
+      const attToSave = [];
+
+      for (const row of rows) {
+        const student_id = parseInt(row.getAttribute('data-student-id'));
+        const held = parseInt(row.querySelector('.input-held').value) || 0;
+        const attended = parseInt(row.querySelector('.input-attended').value) || 0;
+
+        if (attended > held) {
+          showToast(`Error for student ${student_id}: Attended classes cannot exceed classes held.`, 'error');
+          return;
+        }
+        attToSave.push({ student_id, classes_held: held, classes_attended: attended });
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      try {
+        const res = await fetch(`/api/faculty/me/courses/${selectedCourseId}/attendance`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ attendance: attToSave })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Failed to save attendance.');
+
+        showToast(data.message, 'success');
+        await loadCourseAnalytics(selectedCourseId);
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Save Attendance Records';
+      }
+    }
+
+    // 3. Analytics & Watchlist Logic
+    async function loadCourseAnalytics(courseId) {
+      const res = await fetch(`/api/faculty/me/courses/${courseId}/analytics`);
+      if (!res.ok) return;
+      const data = await res.json();
+
+      const kpis = document.getElementById('analyticsKpis');
+      const stats = data.stats || {};
+      kpis.innerHTML = `
+        <div class="kpi-card">
+          <div class="kpi-label">Class Average Score</div>
+          <div class="kpi-value">${stats.avg_score != null ? stats.avg_score + '%' : '—'}</div>
+          <div class="kpi-sub">${stats.evaluated_students || 0} students evaluated</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Course Pass Rate</div>
+          <div class="kpi-value">${stats.pass_rate != null ? stats.pass_rate + '%' : '—'}</div>
+          <div class="kpi-sub">Pass threshold: 40%</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Students at Risk</div>
+          <div class="kpi-value" style="color:var(--vermilion);">${data.at_risk.length}</div>
+          <div class="kpi-sub">Flagged for score or attendance</div>
+        </div>
+      `;
+
+      const riskTbody = document.getElementById('riskTbody');
+      if (data.at_risk.length === 0) {
+        riskTbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--success);font-weight:600;">🎉 No students at risk in this course!</td></tr>`;
+      } else {
+        riskTbody.innerHTML = data.at_risk.map(r => `
+          <tr>
+            <td style="font-family:var(--font-mono);">${r.student_id}</td>
+            <td><b>${escapeHtml(r.student_name)}</b></td>
+            <td>${escapeHtml(r.email || '—')}</td>
+            <td style="font-family:var(--font-mono);color:${r.avg_score < 40 ? 'var(--vermilion)' : 'var(--ink)'}">${r.avg_score != null ? r.avg_score + '%' : '—'}</td>
+            <td style="font-family:var(--font-mono);color:${r.attendance < 75 ? 'var(--vermilion)' : 'var(--ink)'}">${r.attendance != null ? r.attendance + '%' : '—'}</td>
+            <td style="font-family:var(--font-mono);">${r.fails}</td>
+            <td>
+              <span class="badge badge-fail">${r.risk_flags} Flag(s)</span>
+            </td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    function renderResearchTable(research) {
+      const tbody = document.getElementById('researchTbody');
+      if (!research || research.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text-muted);">No supervised research projects.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = research.map(rp => `
+        <tr>
+          <td style="font-family:var(--font-mono);">${rp.project_id}</td>
+          <td><b>${escapeHtml(rp.project_title)}</b></td>
+          <td>${escapeHtml(rp.student_name)} (ID: ${rp.student_id})</td>
+          <td style="font-family:var(--font-mono);font-size:0.8rem;">${rp.start_date || '—'} to ${rp.end_date || '—'}</td>
+          <td><span class="badge ${rp.status === 'Completed' ? 'badge-pass' : 'badge-warning'}">${rp.status}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+  </script>
+</body>
+</html>

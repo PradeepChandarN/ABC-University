@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Portal · ABC University</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/portal.css">
+  <style>
+    .student-hero {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 24px;
+      align-items: center;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 3px;
+      padding: 28px;
+      margin-bottom: 28px;
+    }
+    .score-badge {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      text-align: right;
+    }
+    .score-num {
+      font-family: var(--font-serif);
+      font-size: 3.2rem;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1;
+    }
+    .score-lbl {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      margin-top: 4px;
+    }
+    .benchmark-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .benchmark-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 3px;
+      padding: 18px;
+    }
+    .benchmark-bar-row {
+      margin-top: 12px;
+    }
+    .benchmark-label-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      font-family: var(--font-mono);
+      margin-bottom: 4px;
+    }
+    .bar-track {
+      height: 8px;
+      background: var(--bg-surface);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    .bar-fill-you {
+      height: 100%;
+      background: var(--ink);
+      border-radius: 4px;
+    }
+    .bar-fill-class {
+      height: 100%;
+      background: var(--text-muted);
+      border-radius: 4px;
+    }
+    .meta-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    @media (max-width: 640px) {
+      .student-hero {
+        grid-template-columns: 1fr;
+      }
+      .score-badge {
+        align-items: flex-start;
+        text-align: left;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="topbarContainer"></div>
+
+  <main class="portal-container">
+    <div id="loading" style="text-align:center;padding:60px 0;font-family:var(--font-mono);color:var(--text-muted);">
+      Loading your academic profile...
+    </div>
+
+    <div id="content" style="display:none;">
+      <!-- Hero Header -->
+      <section class="student-hero">
+        <div>
+          <div class="eyebrow" id="sDept">Department</div>
+          <h1 id="sName" style="font-family:var(--font-serif);font-size:2.2rem;font-weight:700;color:var(--ink);line-height:1.15;">Student Name</h1>
+          <p id="sProgram" class="subtitle" style="font-size:1.05rem;color:var(--text-secondary);margin-top:4px;">B.Tech Computer Science · Year 3</p>
+          <div style="display:flex;gap:16px;margin-top:14px;font-family:var(--font-mono);font-size:0.8rem;color:var(--text-muted);">
+            <span>ID: <b id="sId" style="color:var(--ink);"></b></span>
+            <span>Email: <b id="sEmail" style="color:var(--ink);"></b></span>
+            <span>Phone: <b id="sPhone" style="color:var(--ink);"></b></span>
+          </div>
+        </div>
+        <div class="score-badge">
+          <div class="score-num" id="sScore">0.0</div>
+          <div class="score-lbl">Academic Performance (Avg Marks)</div>
+        </div>
+      </section>
+
+      <!-- Section: Attendance Radar & Targets -->
+      <section style="margin-bottom:32px;">
+        <h2 style="font-family:var(--font-serif);font-size:1.4rem;font-weight:700;margin-bottom:14px;">Course Attendance Radar</h2>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Course</th>
+                <th>Classes Held</th>
+                <th>Attended</th>
+                <th>Attendance %</th>
+                <th>Status & Target Action</th>
+              </tr>
+            </thead>
+            <tbody id="attendanceTbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Section: You vs Class Average Benchmark -->
+      <section style="margin-bottom:32px;">
+        <h2 style="font-family:var(--font-serif);font-size:1.4rem;font-weight:700;margin-bottom:6px;">Performance Benchmark: You vs. Class Average</h2>
+        <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:14px;">Aggregated course benchmarks. Peer identities and individual scores remain strictly private.</p>
+        <div class="benchmark-grid" id="benchmarksGrid"></div>
+      </section>
+
+      <!-- Section: Examination Results -->
+      <section style="margin-bottom:32px;">
+        <h2 style="font-family:var(--font-serif);font-size:1.4rem;font-weight:700;margin-bottom:14px;">Assessment & Examination Results</h2>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Semester</th>
+                <th>Course Name</th>
+                <th>Assessment</th>
+                <th>Marks Obtained</th>
+                <th>Max Marks</th>
+                <th>Score %</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="resultsTbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Section: Campus Life Cards -->
+      <section style="margin-bottom:32px;">
+        <h2 style="font-family:var(--font-serif);font-size:1.4rem;font-weight:700;margin-bottom:14px;">Campus Life & Co-Curriculars</h2>
+        <div class="meta-cards-grid">
+          <div class="card" id="scholarshipCard">
+            <h3 style="font-family:var(--font-serif);font-size:1.1rem;margin-bottom:10px;">Scholarships</h3>
+            <div id="scholarshipContent" style="font-size:0.85rem;color:var(--text-secondary);">No active scholarships.</div>
+          </div>
+          <div class="card" id="hostelCard">
+            <h3 style="font-family:var(--font-serif);font-size:1.1rem;margin-bottom:10px;">Hostel Accommodation</h3>
+            <div id="hostelContent" style="font-size:0.85rem;color:var(--text-secondary);">Day scholar (No hostel assigned).</div>
+          </div>
+          <div class="card" id="internshipCard">
+            <h3 style="font-family:var(--font-serif);font-size:1.1rem;margin-bottom:10px;">Industry Internships</h3>
+            <div id="internshipContent" style="font-size:0.85rem;color:var(--text-secondary);">No recorded internships.</div>
+          </div>
+          <div class="card" id="researchCard">
+            <h3 style="font-family:var(--font-serif);font-size:1.1rem;margin-bottom:10px;">Research Projects</h3>
+            <div id="researchContent" style="font-size:0.85rem;color:var(--text-secondary);">No research projects.</div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script src="/static/js/portal.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const user = await checkAuth();
+      if (!user) return;
+      if (user.role !== 'student') {
+        window.location.href = `/${user.role}`;
+        return;
+      }
+      renderTopbar('topbarContainer');
+      loadStudentData();
+    });
+
+    async function loadStudentData() {
+      try {
+        const res = await fetch('/api/student/me/overview');
+        if (!res.ok) {
+          throw new Error('Failed to load student data.');
+        }
+        const data = await res.json();
+        renderStudentView(data);
+      } catch (err) {
+        document.getElementById('loading').innerHTML = `<span style="color:var(--vermilion);">${err.message}</span>`;
+      }
+    }
+
+    function renderStudentView(data) {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('content').style.display = 'block';
+
+      const p = data.profile;
+      document.getElementById('sName').textContent = p.student_name;
+      document.getElementById('sDept').textContent = `${p.dept_name} · HOD: ${p.hod_name || '—'}`;
+      document.getElementById('sProgram').textContent = `${p.program_name} (${p.program_level}) · Year ${p.year_of_study || 1}`;
+      document.getElementById('sId').textContent = p.student_id;
+      document.getElementById('sEmail').textContent = p.email || '—';
+      document.getElementById('sPhone').textContent = p.contact_number || '—';
+      document.getElementById('sScore').textContent = (p.academic_performance || 0).toFixed(1);
+
+      // Attendance Table
+      const attTbody = document.getElementById('attendanceTbody');
+      if (data.attendance.length === 0) {
+        attTbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text-muted);">No attendance records found.</td></tr>`;
+      } else {
+        attTbody.innerHTML = data.attendance.map(row => {
+          const isAtRisk = row.is_at_risk;
+          const pct = row.attendance_percentage || 0;
+          let statusBadge = isAtRisk
+            ? `<span class="badge badge-fail">Below 75%</span>`
+            : `<span class="badge badge-pass">Satisfactory</span>`;
+
+          let alertMsg = isAtRisk
+            ? `<div class="risk-alert-box" style="margin-top:6px;">⚠️ <b>Action Required:</b> Must attend <b>${row.classes_needed_for_75}</b> more consecutive class(es) to reach 75%.</div>`
+            : `<span style="font-size:0.8rem;color:var(--success);font-family:var(--font-mono);">Meets attendance criteria</span>`;
+
+          return `
+            <tr>
+              <td><b>${escapeHtml(row.course_name)}</b></td>
+              <td>${row.classes_held}</td>
+              <td>${row.classes_attended}</td>
+              <td>
+                <div class="attendance-bar-container">
+                  <div class="attendance-track">
+                    <div class="attendance-fill ${isAtRisk ? 'warning' : ''}" style="width: ${Math.min(100, pct)}%;"></div>
+                    <div class="attendance-threshold-mark" title="75% Requirement"></div>
+                  </div>
+                  <b style="font-family:var(--font-mono);font-size:0.85rem;color:${isAtRisk ? 'var(--vermilion)' : 'var(--ink)'}">${pct.toFixed(1)}%</b>
+                </div>
+              </td>
+              <td>
+                ${statusBadge}
+                ${alertMsg}
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      // Benchmarks Grid
+      const benchGrid = document.getElementById('benchmarksGrid');
+      if (data.benchmarks.length === 0) {
+        benchGrid.innerHTML = `<p style="color:var(--text-muted);font-size:0.85rem;">No benchmark comparisons available yet.</p>`;
+      } else {
+        benchGrid.innerHTML = data.benchmarks.map(b => {
+          const my = b.my_avg_percentage || 0;
+          const cls = b.class_avg_percentage || 0;
+          const diff = my - cls;
+          const diffText = diff >= 0 ? `+${diff.toFixed(1)}% above average` : `${diff.toFixed(1)}% below average`;
+          const diffColor = diff >= 0 ? 'var(--success)' : 'var(--vermilion)';
+
+          return `
+            <div class="benchmark-card">
+              <h4 style="font-family:var(--font-serif);font-size:1.05rem;margin-bottom:4px;">${escapeHtml(b.course_name)}</h4>
+              <div style="font-size:0.75rem;font-family:var(--font-mono);color:${diffColor};font-weight:600;margin-bottom:12px;">${diffText}</div>
+              
+              <div class="benchmark-bar-row">
+                <div class="benchmark-label-row">
+                  <span>Your Score</span>
+                  <b>${my.toFixed(1)}%</b>
+                </div>
+                <div class="bar-track">
+                  <div class="bar-fill-you" style="width:${Math.min(100, my)}%;"></div>
+                </div>
+              </div>
+
+              <div class="benchmark-bar-row">
+                <div class="benchmark-label-row">
+                  <span>Class Average (${b.student_count} peers)</span>
+                  <b>${cls.toFixed(1)}%</b>
+                </div>
+                <div class="bar-track">
+                  <div class="bar-fill-class" style="width:${Math.min(100, cls)}%;"></div>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // Examination Results Table
+      const resTbody = document.getElementById('resultsTbody');
+      if (data.results.length === 0) {
+        resTbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--text-muted);">No examination results published yet.</td></tr>`;
+      } else {
+        resTbody.innerHTML = data.results.map(r => `
+          <tr>
+            <td>Semester ${r.semester}</td>
+            <td><b>${escapeHtml(r.course_name)}</b></td>
+            <td>${escapeHtml(r.assessment_type)}</td>
+            <td>${r.marks_obtained}</td>
+            <td>${r.max_marks}</td>
+            <td>
+              <b style="font-family:var(--font-mono);">${r.percentage != null ? r.percentage.toFixed(1) + '%' : '—'}</b>
+            </td>
+            <td>
+              <span class="badge ${r.result_status === 'Pass' ? 'badge-pass' : 'badge-fail'}">${r.result_status}</span>
+            </td>
+          </tr>
+        `).join('');
+      }
+
+      // Campus Life Cards
+      // 1. Scholarships
+      const scholBox = document.getElementById('scholarshipContent');
+      if (data.scholarships && data.scholarships.length > 0) {
+        scholBox.innerHTML = data.scholarships.map(s => `
+          <div style="margin-bottom:8px;">
+            <b>${escapeHtml(s.scholarship_name)}</b>
+            <div style="font-family:var(--font-mono);font-size:0.8rem;color:var(--ink);">Amount: ₹${Number(s.amount).toLocaleString('en-IN')}</div>
+            <span class="badge ${s.status === 'Active' ? 'badge-pass' : 'badge-warning'}">${s.status}</span>
+          </div>
+        `).join('');
+      }
+
+      // 2. Hostel
+      const hostelBox = document.getElementById('hostelContent');
+      if (data.hostel) {
+        hostelBox.innerHTML = `
+          <div>
+            <b>${escapeHtml(data.hostel.hostel_name)}</b>
+            <div style="font-family:var(--font-mono);font-size:0.85rem;margin-top:4px;">Room No: <b style="color:var(--ink);">${escapeHtml(data.hostel.room_no)}</b></div>
+          </div>
+        `;
+      }
+
+      // 3. Internships
+      const internBox = document.getElementById('internshipContent');
+      if (data.internships && data.internships.length > 0) {
+        internBox.innerHTML = data.internships.map(i => `
+          <div style="margin-bottom:10px;">
+            <b>${escapeHtml(i.company_name)}</b>
+            <div style="font-size:0.8rem;color:var(--text-muted);font-family:var(--font-mono);">
+              Duration: ${i.duration_weeks} weeks (${i.start_date || '—'} to ${i.end_date || '—'})
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // 4. Research
+      const resBox = document.getElementById('researchContent');
+      if (data.research && data.research.length > 0) {
+        resBox.innerHTML = data.research.map(rp => `
+          <div style="margin-bottom:10px;">
+            <b>${escapeHtml(rp.project_title)}</b>
+            <div style="font-size:0.8rem;color:var(--text-muted);">Guide: ${escapeHtml(rp.supervisor)}</div>
+            <span class="badge ${rp.status === 'Completed' ? 'badge-pass' : 'badge-warning'}">${rp.status}</span>
+          </div>
+        `).join('');
+      }
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+  </script>
+</body>
+</html>

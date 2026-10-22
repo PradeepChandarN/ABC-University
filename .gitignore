@@ -31,3 +31,6 @@ cloudflared.exe
 Thumbs.db
 Desktop.ini
 .DS_Store
+
+# Credentials
+CREDENTIALS.md

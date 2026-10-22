@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In · ABC University</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/portal.css">
+  <style>
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: var(--bg-primary);
+      padding: 20px;
+    }
+    .login-card {
+      background: var(--bg-card);
+      border: 1px solid var(--ink);
+      border-radius: 3px;
+      box-shadow: var(--shadow-modal);
+      width: 100%;
+      max-width: 440px;
+      padding: 36px 32px;
+    }
+    .login-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .login-brand .brand-badge-icon {
+      width: 42px;
+      height: 42px;
+      font-size: 1.4rem;
+    }
+    .login-brand h1 {
+      font-family: var(--font-serif);
+      font-size: 1.4rem;
+      line-height: 1.1;
+      letter-spacing: -0.01em;
+    }
+    .login-brand span {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      color: var(--vermilion);
+      letter-spacing: 0.08em;
+    }
+    .password-wrapper {
+      position: relative;
+    }
+    .password-toggle {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-family: var(--font-mono);
+      padding: 4px;
+    }
+    .password-toggle:hover {
+      color: var(--ink);
+    }
+    .demo-box {
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px dashed var(--border-color);
+    }
+    .demo-title {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+    }
+    .demo-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .demo-pill {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      padding: 4px 8px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 2px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      color: var(--ink);
+    }
+    .demo-pill:hover {
+      background: var(--ink);
+      color: var(--bg-primary);
+      border-color: var(--ink);
+    }
+    .error-alert {
+      background: var(--vermilion-bg);
+      border: 1px solid var(--vermilion);
+      color: #7c2d12;
+      padding: 10px 14px;
+      border-radius: 2px;
+      font-size: 0.85rem;
+      margin-bottom: 16px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-card">
+    <div class="login-brand">
+      <div class="brand-badge-icon">A</div>
+      <div>
+        <h1>ABC University</h1>
+        <span>Academic Management System</span>
+      </div>
+    </div>
+
+    <div id="errorAlert" class="error-alert"></div>
+
+    <form id="loginForm" onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label class="form-label" for="userId">Login ID</label>
+        <input type="text" id="userId" class="form-control" required autofocus autocomplete="username" placeholder="e.g. admin, 501, 1001">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="password">Password</label>
+        <div class="password-wrapper">
+          <input type="password" id="password" class="form-control" required autocomplete="current-password" placeholder="Enter password">
+          <button type="button" class="password-toggle" id="togglePass" onclick="togglePasswordVisibility()">Show</button>
+        </div>
+      </div>
+
+      <button type="submit" id="submitBtn" class="btn btn-primary" style="width: 100%; margin-top: 10px; padding: 10px;">
+        Sign In to Portal
+      </button>
+    </form>
+
+    <div class="demo-box">
+      <div class="demo-title">Quick Demo Sign In:</div>
+      <div class="demo-pills">
+        <button type="button" class="demo-pill" onclick="fillDemo('admin', 'Admin@123')">Admin (admin)</button>
+        <button type="button" class="demo-pill" onclick="fillDemo('501', 'Faculty@123')">Faculty (501)</button>
+        <button type="button" class="demo-pill" onclick="fillDemo('1001', 'Student@123')">Student (1001)</button>
+        <button type="button" class="demo-pill" onclick="fillDemo('1004', 'Student@123')">Student (1004)</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function togglePasswordVisibility() {
+      const pass = document.getElementById('password');
+      const toggle = document.getElementById('togglePass');
+      if (pass.type === 'password') {
+        pass.type = 'text';
+        toggle.textContent = 'Hide';
+      } else {
+        pass.type = 'password';
+        toggle.textContent = 'Show';
+      }
+    }
+
+    function fillDemo(uid, pass) {
+      document.getElementById('userId').value = uid;
+      document.getElementById('password').value = pass;
+      document.getElementById('errorAlert').style.display = 'none';
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const errBox = document.getElementById('errorAlert');
+      const btn = document.getElementById('submitBtn');
+      errBox.style.display = 'none';
+
+      const user_id = document.getElementById('userId').value.trim();
+      const password = document.getElementById('password').value;
+
+      btn.disabled = true;
+      btn.textContent = 'Signing in...';
+
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id, password })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.detail || 'Sign in failed.');
+        }
+
+        window.location.href = data.redirect || '/';
+      } catch (err) {
+        errBox.textContent = err.message;
+        errBox.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Sign In to Portal';
+      }
+    }
+  </script>
+</body>
+</html>

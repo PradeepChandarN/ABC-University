@@ -136,3 +136,24 @@ CREATE TABLE IF NOT EXISTS RESEARCH_PROJECT (
     CONSTRAINT fk_research_student FOREIGN KEY (student_id) REFERENCES STUDENT(student_id),
     CONSTRAINT fk_research_faculty FOREIGN KEY (faculty_id) REFERENCES FACULTY(faculty_id)
 );
+
+CREATE TABLE IF NOT EXISTS USER_ACCOUNT (
+    user_id              VARCHAR(50) PRIMARY KEY,
+    role                 VARCHAR(20) NOT NULL CHECK (role IN ('admin','faculty','student')),
+    ref_id               INTEGER,
+    password_hash        VARCHAR(255) NOT NULL,
+    is_active            BOOLEAN DEFAULT TRUE,
+    must_change_password BOOLEAN DEFAULT TRUE,
+    failed_attempts      INTEGER DEFAULT 0,
+    locked_until         TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS AUDIT_LOG (
+    log_id      INTEGER PRIMARY KEY,
+    timestamp   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    user_id     VARCHAR(50) NOT NULL,
+    role        VARCHAR(20) NOT NULL,
+    action      VARCHAR(50) NOT NULL,
+    target      VARCHAR(100) NOT NULL,
+    details     TEXT
+);

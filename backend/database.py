@@ -8,7 +8,7 @@ DB_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "university.d
 SCHEMA_SQL = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "sql", "schema.sql")
 SEED_SQL = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "sql", "seed.sql")
 
-db_lock = threading.Lock()
+db_lock = threading.RLock()
 
 # Table definitions and column metadata
 TABLES_META = {
@@ -203,6 +203,13 @@ def init_database():
                 print("Sample records successfully seeded and academic performance computed!")
             else:
                 print(f"Database already populated ({table_check} departments found). Skipping re-seed.")
+
+            # 3. Ensure user accounts are seeded
+            try:
+                from auth import seed_user_accounts
+                seed_user_accounts(con)
+            except Exception as e:
+                print(f"[AUTH SEED WARNING] Could not seed user accounts: {e}")
         finally:
             con.close()
 
